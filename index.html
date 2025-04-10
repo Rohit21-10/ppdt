@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Timer Story</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #startButton, #resetButton {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        #startButton {
+            background-color: #4CAF50;
+        }
+        #startButton:hover {
+            background-color: #45a049;
+        }
+        #resetButton {
+            background-color: #f44336;
+            display: none; /* Shuru mein chhupa rahega */
+        }
+        #resetButton:hover {
+            background-color: #da190b;
+        }
+        #imageContainer {
+            margin: 20px 0;
+        }
+        #timerDisplay {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+        #storyInput {
+            width: 80%;
+            height: 150px;
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 16px;
+            display: none;
+        }
+        #imageContainer img {
+            width: 900px;
+            height: 650px;
+            object-fit: cover;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <button id="startButton">Start</button>
+    <button id="resetButton">Reset</button>
+    <div id="imageContainer"></div>
+    <div id="timerDisplay"></div>
+    <textarea id="storyInput" placeholder="Write your story here..."></textarea>
+
+    <script>
+        const startButton = document.getElementById('startButton');
+        const resetButton = document.getElementById('resetButton');
+        const imageContainer = document.getElementById('imageContainer');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const storyInput = document.getElementById('storyInput');
+        
+        const imageUrls = [
+            'https://ssbcrackexams.com/wp-content/uploads/2025/03/image-208.png',
+	    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmlpJg8RuAtzJqphQ4oHrGbUAfWnZA503Enw&s', 
+             'https://2.bp.blogspot.com/-BlQGDAHIi6o/UARQG8b2gnI/AAAAAAAABgU/RbbJFJ5Rfoc/s320/Tat2.jpg',
+	     'https://i.pinimg.com/474x/fc/3b/32/fc3b32ad406fab8a77f5ea400c5f0d56.jpg','https://www.defenceguru.co.in/DF/Admin/pages/Gallery/ppdt-image-3.jpg'
+	     
+
+            
+        ];
+        
+        const alertSound = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
+        alertSound.preload = 'auto';
+        
+        let photoTimerId = null; // Timer ko track karne ke liye
+        let storyTimerId = null;
+
+        startButton.addEventListener('click', startProcess);
+        resetButton.addEventListener('click', resetProcess);
+
+        function startProcess() {
+            startButton.disabled = true;
+            resetButton.style.display = 'inline-block'; // Reset button dikhao
+            showImage();
+        }
+
+        function resetProcess() {
+            // Clear existing timers
+            if (photoTimerId) clearTimeout(photoTimerId);
+            if (storyTimerId) clearTimeout(storyTimerId);
+            
+            // Reset UI
+            imageContainer.innerHTML = '';
+            storyInput.style.display = 'none';
+            storyInput.disabled = false;
+            storyInput.value = ''; // Textarea clear karo
+            timerDisplay.textContent = '';
+            
+            // Start afresh
+            startButton.disabled = true;
+            resetButton.style.display = 'inline-block';
+            showImage();
+        }
+
+        function showImage() {
+            const randomIndex = Math.floor(Math.random() * imageUrls.length);
+            const imageUrl = imageUrls[randomIndex];
+            
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = 'Random Image';
+            img.onerror = () => {
+                imageContainer.innerHTML = 'Image failed to load!';
+            };
+            imageContainer.appendChild(img);
+            
+            let photoTime = 30;
+            timerDisplay.textContent = `Photo Timer: ${photoTime}s`;
+            
+            function updatePhotoTimer() {
+                photoTime--;
+                timerDisplay.textContent = `Photo Timer: ${photoTime}s`;
+                
+                if (photoTime > 0) {
+                    photoTimerId = setTimeout(updatePhotoTimer, 1000);
+                } else {
+                    imageContainer.innerHTML = '';
+                    playAlertSound();
+                    startStoryTimer();
+                }
+            }
+            photoTimerId = setTimeout(updatePhotoTimer, 1000);
+        }
+
+        function startStoryTimer() {
+            storyInput.style.display = 'block';
+            let storyTime = 4 * 60;
+            timerDisplay.textContent = `Story Timer: ${formatTime(storyTime)}`;
+            
+            function updateStoryTimer() {
+                storyTime--;
+                timerDisplay.textContent = `Story Timer: ${formatTime(storyTime)}`;
+                
+                if (storyTime > 0) {
+                    storyTimerId = setTimeout(updateStoryTimer, 1000);
+                } else {
+                    playAlertSound();
+                    storyInput.disabled = true;
+                    startButton.disabled = false;
+                    resetButton.style.display = 'none'; // Reset chhupa do jab story khatam
+                }
+            }
+            storyTimerId = setTimeout(updateStoryTimer, 1000);
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs < 10 ? '0' + secs : secs}`;
+        }
+
+        function playAlertSound() {
+            alertSound.play().catch(err => console.log('Audio failed to play:', err));
+        }
+    </script>
+</body>
+</html>
